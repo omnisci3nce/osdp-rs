@@ -1,4 +1,5 @@
 use osdp_rs::parser::Parser;
+use osdp_rs::packet::{ACK, Message};
 
 fn main() {
   println!("osdp-rs");
@@ -11,4 +12,7 @@ fn main() {
   for byte in raw_bytes {
     parser.parse_byte(byte);
   }
+
+  let p = ACK{};
+  println!("ACK data length: {} bytes", p.data_length().unwrap());
 }
