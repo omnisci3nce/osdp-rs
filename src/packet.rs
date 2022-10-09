@@ -3,6 +3,9 @@ pub trait Message {
   fn data_length(&self) -> Option<i32>;
 }
 
+#[derive(Debug)]
+pub struct Packet{}
+
 pub struct ACK {}
 
 impl Message for ACK {
