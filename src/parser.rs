@@ -7,19 +7,20 @@
   Byte 5: CTRL - Message Control Information
 */
 
+#[derive(Debug)]
 enum ParserState {
   Header,
-  SCB,
+  // SCB,
   Data,
-  MAC,
-  Validation
+  // MAC,
+  // Validation
 }
 
 // if 4th bit in CTRL set, we have SCB otherwise skip to Data
 
 pub struct Parser {
   state: ParserState,
-  buffer: Vec<u8>,
+  buffer: Vec<u8>
 }
 
 impl Parser {
@@ -30,7 +31,13 @@ impl Parser {
     }
   }
 
+  fn transition(&mut self, target: ParserState) {
+    println!("[PARSER] Transition to {:?} state", target);
+    self.state = target;
+  }
+
   pub fn parse_byte(&mut self, byte: u8) {
+    println!("[PARSER] Parse byte {:#02x}", byte);
     // Push byte into buffer
     self.buffer.push(byte);
 
@@ -38,11 +45,9 @@ impl Parser {
     match self.state {
       ParserState::Header => {
         if self.buffer.len() >= 5 {
-          self.state = ParserState::Data;
-        } else {
-          println!("HELLO");
+          self.transition(ParserState::Data)
         }
-      }
+      },
       _ => {
         dbg!("TEST!");
       }
