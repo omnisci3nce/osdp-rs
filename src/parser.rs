@@ -15,8 +15,8 @@ enum ParserState {
   SCB,
   Data,
   // MAC,
-  // Validation,
-  Done
+  Validation,
+  Done,
 }
 
 // if 4th bit in CTRL set, we have SCB otherwise skip to Data
@@ -24,7 +24,7 @@ enum ParserState {
 pub struct Parser {
   state: ParserState,
   buffer: Vec<u8>,
-  msg_type: Option<u8>
+  temp_packet: Packet,
 }
 
 impl Parser {
@@ -32,7 +32,7 @@ impl Parser {
     Parser {
       state: ParserState::Header,
       buffer: vec![],
-      msg_type: None
+      temp_packet: Default::default(),
     }
   }
 
@@ -48,26 +48,37 @@ impl Parser {
     // Depending on what state the parser is in we will take different actions
     match self.state {
       ParserState::Header => {
-        if self.buffer.len() >= 5 {
-          let scb_bit_set = self.buffer[4] & 0x08 != 0;
-          if scb_bit_set {
+        if self.buffer.len() == 5 {
+          println!("Accumulated whole packet header");
+
+          self.temp_packet.address = self.buffer[0];
+          let len_lsb = self.buffer[2];
+          let len_msb = self.buffer[3];
+          let len = ((len_msb as u16) << 8) | len_lsb as u16;
+          println!("Expecting packet of length: {}", len);
+          self.temp_packet.length = len;
+          self.temp_packet.msg_ctrl_info = self.buffer[4];
+
+          if self.temp_packet.has_sch() {
             self.transition(ParserState::SCB)
           } else {
+            println!("[PARSER] Skip SCB");
             self.transition(ParserState::Data)
           }
         }
-      },
+      }
       ParserState::Data => {
         // In Data state we just accumulate data
-        match self.msg_type {
-          None => {
-            self.msg_type = Some(byte);
-          },
-          Some(_) => {
-            self.transition(ParserState::Done)
-          }
+        if self.buffer.len() == (self.temp_packet.length - 2).into() {
+          println!("[PARSER] Accumulated all data bytes");
+          self.transition(ParserState::Validation);
         }
-        
+      }
+      ParserState::Validation => {
+        if self.buffer.len() == self.temp_packet.length.into() {
+          println!("[PARSER] Finished receiving packet");
+          self.transition(ParserState::Done);
+        }
       }
       _ => {
         dbg!("TEST!");
@@ -78,19 +89,19 @@ impl Parser {
     match self.state {
       ParserState::Done => {
         // save the packet
-        let p = Some(Packet{});
+        let p = Some(self.temp_packet);
         // reset the parser
         self.reset_parser();
         p
-      },
-      _ => None
+      }
+      _ => None,
     }
   }
 
   fn reset_parser(&mut self) {
     self.state = ParserState::Header;
-    self.msg_type = None;
     self.buffer.clear();
+    self.temp_packet = Packet::default();
   }
 }
 
@@ -110,9 +121,9 @@ impl Parser {
   Overall control flow - pseudocode
 
   populate fixed sized header
-  
+
   if SCB bit then we populate scb other wise skip to data
-  
+
   data is either fixed-length or variable
   if fixed length we just look for X number of bytes
   else if variable we continue reading and extending expected data length
