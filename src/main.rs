@@ -8,7 +8,7 @@ fn main() {
   let mut parser = Parser::new(); // instantiate default parser state
 
   //                            SOM   ADDR  LEN   LEN   CTRL c(POLL) CRC1  CRC2
-  let raw_bytes: Vec<u8> = vec![0x53, 0x80, 0x08, 0x00, 0x04,  0x00, 0x00, 0x00];
+  let raw_bytes: Vec<u8> = vec![0x53, 0x80, 0x08, 0x00, 0x04,  0x60, 0x00, 0x00];
 
   for byte in raw_bytes {
     let completed_packet: Option<Packet> = parser.parse_byte(byte);
@@ -18,7 +18,4 @@ fn main() {
     }
     
   }
-
-  // let p = ACK{};
-  // println!("ACK data length: {} bytes", p.data_length().unwrap());
 }
