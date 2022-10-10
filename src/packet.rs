@@ -1,10 +1,15 @@
 #[derive(Debug, Default, Clone, Copy)]
-pub struct Packet{
+pub struct Packet {
   pub address: u8,
   pub length: u16,
   pub msg_ctrl_info: u8,
 
   pub msg_type: u8,
+}
+
+pub enum ValidationType {
+  Checksum,
+  CRC16,
 }
 
 impl Packet {
@@ -13,6 +18,18 @@ impl Packet {
     scb_bit_set
   }
 
-  // TODO(Josh): get this based on bits in CTRL byte in header
-  pub fn validation_len(&self) -> u16 { 2 } // for now just spit out 2
+  pub fn validation_len(&self) -> u16 {
+    match self.validation_type() {
+      ValidationType::CRC16 => 2,
+      ValidationType::Checksum => 1,
+    }
+  }
+
+  pub fn validation_type(&self) -> ValidationType {
+    let bit_set = self.msg_ctrl_info & 0x04 != 0;
+    match bit_set {
+      true => ValidationType::CRC16,
+      false => ValidationType::Checksum,
+    }
+  }
 }
