@@ -26,8 +26,9 @@ impl Packet {
   }
 
   pub fn validation_type(&self) -> ValidationType {
-    let bit_set = self.msg_ctrl_info & 0x04 != 0;
-    match bit_set {
+    let bit = self.msg_ctrl_info & 0x04;
+    let is_bit_set = bit != 0;
+    match is_bit_set {
       true => ValidationType::CRC16,
       false => ValidationType::Checksum,
     }
