@@ -25,6 +25,7 @@ pub struct Parser {
   state: ParserState,
   buffer: Vec<u8>,
   temp_packet: Packet,
+  expected_data_len: u16,
 }
 
 impl Parser {
@@ -33,6 +34,7 @@ impl Parser {
       state: ParserState::Header,
       buffer: vec![],
       temp_packet: Default::default(),
+      expected_data_len: 0,
     }
   }
 
@@ -49,15 +51,18 @@ impl Parser {
     match self.state {
       ParserState::Header => {
         if self.buffer.len() == 5 {
-          println!("Accumulated whole packet header");
+          println!("[PARSER] Accumulated whole packet header");
 
           self.temp_packet.address = self.buffer[0];
           let len_lsb = self.buffer[2];
           let len_msb = self.buffer[3];
           let len = ((len_msb as u16) << 8) | len_lsb as u16;
-          println!("Expecting packet of length: {}", len);
+          println!("[PARSER] Expecting packet of length: {}", len);
           self.temp_packet.length = len;
           self.temp_packet.msg_ctrl_info = self.buffer[4];
+
+          //                           header
+          self.expected_data_len = len - 5 - self.temp_packet.validation_len();
 
           if self.temp_packet.has_sch() {
             self.transition(ParserState::SCB)
@@ -69,7 +74,8 @@ impl Parser {
       }
       ParserState::Data => {
         // In Data state we just accumulate data
-        if self.buffer.len() == (self.temp_packet.length - 2).into() {
+        if self.buffer.len() == (self.temp_packet.length - self.temp_packet.validation_len()).into()
+        {
           println!("[PARSER] Accumulated all data bytes");
           self.transition(ParserState::Validation);
         }

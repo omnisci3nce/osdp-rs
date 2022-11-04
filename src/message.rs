@@ -1,10 +1,10 @@
 use std::fmt;
 
 // A message must implement the following functions
-pub trait Message {
+/*pub trait Message {
   /** Returns Some for expected data in bytes and None when the data length is variable */
   fn data_length(&self) -> Option<i32>;
-}
+}*/
 
 pub trait DataBlock {
   fn serialise(&self) -> Vec<u8>;
@@ -21,12 +21,6 @@ pub trait Reply {}
 
 pub struct Poll {} // 0x60
 pub struct ReaderLED {} // 0x69
-
-impl Message for Poll {
-  fn data_length(&self) -> Option<i32> {
-    Some(0)
-  }
-}
 
 pub struct DeviceIDReportRequest {}
 impl DeviceIDReportRequest {
@@ -49,12 +43,6 @@ impl DeviceCapabilitiesRequest {
 
 pub struct Ack {} // 0x40
 pub struct Nack {} // 0x41
-
-impl Message for Ack {
-  fn data_length(&self) -> Option<i32> {
-    Some(0)
-  }
-}
 
 #[derive(Debug)]
 pub struct DeviceIDReport {
@@ -111,4 +99,14 @@ impl DataBlock for DeviceIDReport {
   fn serialise(&self) -> Vec<u8> {
     todo!("TODO");
   }
+}
+
+pub enum Message {
+  CMD_POLL(Poll),
+  CMD_ID(DeviceIDReportRequest),
+  CMD_CAP(DeviceCapabilitiesRequest),
+
+  REPLY_ACK(Ack),
+  REPLY_NAK(Nack),
+  REPLY_PDID(DeviceIDReport),
 }
