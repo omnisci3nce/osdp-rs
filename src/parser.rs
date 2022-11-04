@@ -77,6 +77,7 @@ impl Parser {
         if self.buffer.len() == (self.temp_packet.length - self.temp_packet.validation_len()).into()
         {
           println!("[PARSER] Accumulated all data bytes");
+          self.temp_packet.buffer = self.buffer.clone();
           self.transition(ParserState::Validation);
         }
       }
@@ -95,7 +96,7 @@ impl Parser {
     match self.state {
       ParserState::Done => {
         // save the packet
-        let p = Some(self.temp_packet);
+        let p = Some(self.temp_packet.clone());
         // reset the parser
         self.reset_parser();
         p

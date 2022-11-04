@@ -1,3 +1,5 @@
+use crate::packet::Packet;
+use std::error::Error;
 use std::fmt;
 
 // A message must implement the following functions
@@ -109,4 +111,13 @@ pub enum Message {
   REPLY_ACK(Ack),
   REPLY_NAK(Nack),
   REPLY_PDID(DeviceIDReport),
+}
+
+pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
+  match p.address {
+    0x45 => Ok(Message::REPLY_PDID(DeviceIDReport::deserialise(
+      &p.buffer[5..],
+    ))),
+    _ => Err("Unknown type")?,
+  }
 }

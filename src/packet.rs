@@ -1,9 +1,10 @@
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone)]
 pub struct Packet {
   pub address: u8,
   pub length: u16,
   pub msg_ctrl_info: u8,
 
+  pub buffer: Vec<u8>,
   pub msg_type: u8,
 }
 
