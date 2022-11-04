@@ -8,3 +8,5 @@ More information on OSDP can be found on the official SIA site: [open-supervised
 ## Ideas
 
 - Investigate [deku](https://github.com/sharksforarms/deku) for serialisation/deserialisation
+- REPL
+- TUI
