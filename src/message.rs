@@ -6,6 +6,11 @@ pub trait Message {
   fn data_length(&self) -> Option<i32>;
 }
 
+pub trait DataBlock {
+    fn serialise(&self) -> Vec<u8>;
+    fn deserialise(bytes: &[u8]) -> Self;
+}
+
 pub trait Command {}
 pub trait Reply {}
 
@@ -81,4 +86,31 @@ impl fmt::Display for DeviceIDReport {
       self.firmware_version
     )
   }
+}
+
+impl DataBlock for DeviceIDReport {
+    fn deserialise(bytes: &[u8]) -> Self {
+        if bytes.len() != 12 {
+            panic!("Expected data block length of 12");
+        }
+        let vendor_code = bytes[0] as u32
+                        | ((bytes[1] as u32) << 8)
+                        | ((bytes[2] as u32) << 16);
+        let serial = bytes[5] as u32
+                   | ((bytes[6] as u32) << 8)
+                   | ((bytes[7] as u32) << 16)
+                   | ((bytes[8] as u32) << 24);
+        let firmware = format!("{}.{}.{}", bytes[9], bytes[10], bytes[11]);
+        DeviceIDReport{
+            vendor_code: vendor_code,
+            model_no: bytes[3],
+            model_version: bytes[4],
+            serial_number: serial,
+            firmware_version: firmware
+        }
+    }
+
+    fn serialise(&self) -> Vec<u8> {
+        todo!("TODO");
+    }
 }
