@@ -27,7 +27,7 @@ fn main() {
     packet.push(b);
   }
   // command type
-  packet.push(0x61);
+  packet.push(0x62);
   // data block
   let data_block = Vec::from([0x00]);
   for b in data_block {
@@ -54,6 +54,7 @@ fn main() {
             match msg {
               Ok(msg) => match msg {
                 osdp_rs::message::Message::REPLY_PDID(d) => println!("{}", d),
+                osdp_rs::message::Message::REPLY_PDCAP(d) => println!("{}", d),
                 _ => (),
               },
               Err(_e) => panic!("Error deserialising packet to message!"),
