@@ -68,7 +68,7 @@ impl fmt::Display for DeviceIDReport {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(
       f,
-      "Vendor Code: {}\nModel Number: {}\nModel Version: {}\nSerial Number: {}\nFirmware: {}\n",
+      "DeviceIDReport (0x45):\n  Vendor Code: {}\n  Model Number: {}\n  Model Version: {}\n  Serial Number: {}\n  Firmware: {}\n",
       self.vendor_code,
       self.model_no,
       self.model_version,
@@ -114,9 +114,9 @@ pub enum Message {
 }
 
 pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
-  match p.address {
+  match p.msg_type {
     0x45 => Ok(Message::REPLY_PDID(DeviceIDReport::deserialise(
-      &p.buffer[5..],
+      &p.buffer[1..],
     ))),
     _ => Err("Unknown type")?,
   }
