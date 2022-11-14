@@ -1,6 +1,7 @@
 use crate::packet::Packet;
+use std::collections::HashMap;
 use std::error::Error;
-use std::fmt;
+use std::fmt::{self, Display};
 
 // A message must implement the following functions
 /*pub trait Message {
@@ -55,15 +56,6 @@ pub struct DeviceIDReport {
   firmware_version: String,
 }
 
-struct Capability {
-  function_code: u8,
-  compliance: u8,
-  number_of: u8,
-}
-pub struct DeviceCapabilitiesReport {
-  capabilities: Vec<Capability>,
-}
-
 impl fmt::Display for DeviceIDReport {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(
@@ -103,6 +95,67 @@ impl DataBlock for DeviceIDReport {
   }
 }
 
+#[derive(Debug)]
+struct Capability {
+  function_code: u8,
+  compliance: u8,
+  number_of: u8,
+}
+#[derive(Debug)]
+pub struct DeviceCapabilitiesReport {
+  capabilities: Vec<Capability>,
+}
+
+impl Display for DeviceCapabilitiesReport {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let mut pretty_function_code = HashMap::new();
+    pretty_function_code.insert(1, String::from("Contact Status Monitoring"));
+    pretty_function_code.insert(2, String::from("Output Control"));
+    pretty_function_code.insert(3, String::from("Card Data Format"));
+    pretty_function_code.insert(4, String::from("Reader LED Control"));
+    pretty_function_code.insert(5, String::from("Reader Audible Output"));
+    pretty_function_code.insert(6, String::from("Reader Text Output"));
+    pretty_function_code.insert(7, String::from("Time Keeping"));
+    pretty_function_code.insert(8, String::from("Check Character Support"));
+    pretty_function_code.insert(9, String::from("Communication Security"));
+    pretty_function_code.insert(10, String::from("Receive BufferSize"));
+    pretty_function_code.insert(11, String::from("Largest Combined Message Size"));
+    pretty_function_code.insert(12, String::from("Smart Card Support"));
+
+    for ele in &self.capabilities {
+      write!(
+        f,
+        "  Function: {}  Compliance: {}\n",
+        pretty_function_code
+          .get(&ele.function_code)
+          .unwrap_or(&String::from(ele.function_code.to_string())),
+        ele.compliance
+      )?;
+    }
+    Ok(())
+  }
+}
+
+impl DataBlock for DeviceCapabilitiesReport {
+  fn deserialise(bytes: &[u8]) -> Self {
+    if bytes.len() % 3 != 0 {
+      panic!("data block must be multiple of 3 byte structure.");
+    }
+    let r = bytes.chunks(3).map(|b| Capability {
+      function_code: b[0],
+      compliance: b[1],
+      number_of: b[2],
+    });
+    DeviceCapabilitiesReport {
+      capabilities: r.collect(),
+    }
+  }
+
+  fn serialise(&self) -> Vec<u8> {
+    todo!("TODO");
+  }
+}
+
 pub enum Message {
   CMD_POLL(Poll),
   CMD_ID(DeviceIDReportRequest),
@@ -111,12 +164,16 @@ pub enum Message {
   REPLY_ACK(Ack),
   REPLY_NAK(Nack),
   REPLY_PDID(DeviceIDReport),
+  REPLY_PDCAP(DeviceCapabilitiesReport),
 }
 
 pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
   match p.msg_type {
     0x45 => Ok(Message::REPLY_PDID(DeviceIDReport::deserialise(
-      &p.buffer[1..],
+      &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)],
+    ))),
+    0x46 => Ok(Message::REPLY_PDCAP(DeviceCapabilitiesReport::deserialise(
+      &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)],
     ))),
     _ => Err("Unknown type")?,
   }
