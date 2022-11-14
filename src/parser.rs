@@ -74,7 +74,8 @@ impl Parser {
           //                           header
           println!("Len: {:?}", len);
           println!("Validatin len: {:?}", self.temp_packet.validation_len());
-          self.expected_data_len = len - 4 - self.temp_packet.validation_len();
+          self.expected_data_len = len - 6 - self.temp_packet.validation_len();
+          println!("expected data len: {:?}", self.expected_data_len);
 
           if self.temp_packet.has_sch() {
             self.transition(ParserState::SCB)
@@ -86,16 +87,19 @@ impl Parser {
       }
       ParserState::Data => {
         // In Data state we just accumulate data
-        if self.buffer.len() == (self.expected_data_len - self.temp_packet.validation_len()).into()
+        if self.buffer.len()
+          == (4 + 1 + self.expected_data_len - self.temp_packet.validation_len()).into()
         {
           println!("[PARSER] Accumulated all data bytes");
-          self.temp_packet.buffer = self.buffer.clone();
+          // self.temp_packet.buffer = self.buffer.clone();
           self.temp_packet.msg_type = self.buffer[4];
           self.transition(ParserState::Validation);
         }
       }
       ParserState::Validation => {
-        if self.buffer.len() == self.expected_data_len.into() {
+        if self.buffer.len()
+          == (4 + 1 + self.expected_data_len + self.temp_packet.validation_len()).into()
+        {
           println!("[PARSER] Finished receiving packet");
           self.transition(ParserState::Done);
         }
@@ -109,6 +113,7 @@ impl Parser {
     match self.state {
       ParserState::Done => {
         // save the packet
+        self.temp_packet.buffer = self.buffer.clone();
         let p = Some(self.temp_packet.clone());
         // reset the parser
         self.reset_parser();
