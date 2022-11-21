@@ -106,28 +106,31 @@ pub struct DeviceCapabilitiesReport {
   capabilities: Vec<Capability>,
 }
 
+const fn capability_code_to_str(code: u8) -> Option<&'static str> {
+  match code {
+    1 => Some("Contact Status Monitoring"),
+    2 => Some("Output Control"),
+    3 => Some("Card Data Format"),
+    4 => Some("Reader LED Control"),
+    5 => Some("Reader Audible Output"),
+    6 => Some("Reader Text Output"),
+    7 => Some("Time Keeping"),
+    8 => Some("Check Character Support"),
+    9 => Some("Communication Security"),
+    10 => Some("Receive BufferSize"),
+    11 => Some("Largest Combined Message Size"),
+    12 => Some("Smart Card Support"),
+    _ => None
+  }
+}
+
 impl Display for DeviceCapabilitiesReport {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    let mut pretty_function_code = HashMap::new();
-    pretty_function_code.insert(1, String::from("Contact Status Monitoring"));
-    pretty_function_code.insert(2, String::from("Output Control"));
-    pretty_function_code.insert(3, String::from("Card Data Format"));
-    pretty_function_code.insert(4, String::from("Reader LED Control"));
-    pretty_function_code.insert(5, String::from("Reader Audible Output"));
-    pretty_function_code.insert(6, String::from("Reader Text Output"));
-    pretty_function_code.insert(7, String::from("Time Keeping"));
-    pretty_function_code.insert(8, String::from("Check Character Support"));
-    pretty_function_code.insert(9, String::from("Communication Security"));
-    pretty_function_code.insert(10, String::from("Receive BufferSize"));
-    pretty_function_code.insert(11, String::from("Largest Combined Message Size"));
-    pretty_function_code.insert(12, String::from("Smart Card Support"));
-
     for ele in &self.capabilities {
       write!(
         f,
         "  Function: {}  Compliance: {}\n",
-        pretty_function_code
-          .get(&ele.function_code)
+        capability_code_to_str(ele.function_code)
           .unwrap_or(&String::from(ele.function_code.to_string())),
         ele.compliance
       )?;
