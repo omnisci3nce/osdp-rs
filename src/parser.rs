@@ -73,7 +73,7 @@ impl Parser {
 
           //                           header
           println!("Len: {:?}", len);
-          println!("Validatin len: {:?}", self.temp_packet.validation_len());
+          println!("Validation len: {:?}", self.temp_packet.validation_len());
           self.expected_data_len = len - 6 - self.temp_packet.validation_len();
           println!("expected data len: {:?}", self.expected_data_len);
 
