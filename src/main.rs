@@ -1,5 +1,6 @@
 use osdp_rs::crc::calc_checksum;
-use osdp_rs::message::from_packet;
+use osdp_rs::device::BusDevice;
+use osdp_rs::message::{Message::CMD_ID, from_packet, DeviceIDReportRequest};
 use osdp_rs::packet::Packet;
 use osdp_rs::parser::Parser;
 use std::io;
@@ -14,32 +15,17 @@ fn main() {
   println!("{:?}", &builder);
   let mut port = builder.open().expect("Failed to open port");
 
-  // Create a packet for testing (requests device info)
-  // -------------------------------------------------
-  let mut packet = Vec::with_capacity(20);
 
-  // create header       SOM   ADDR  LEN -----------|  CTRL
-  let len: u16 = (5 + 1 + 1 + 1);
-  let len_lsb = (len & 0xFF) as u8;
-  let len_msb = ((len >> 8) & 0xFF) as u8;
-  let header: [u8; 5] = [0x53, 0x00, len_lsb, len_msb, 0x00];
-  for b in header {
-    packet.push(b);
-  }
-  // command type
-  packet.push(0x62);
-  // data block
-  let data_block = Vec::from([0x00]);
-  for b in data_block {
-    packet.push(b);
-  }
-  // validation
-  let chksum = calc_checksum(&packet);
-  packet.push(chksum);
-  // -------------------------------------------------
+
+  let device = BusDevice {
+    address: 0x0A,
+  };
+
+  // Send a packet for testing (requests device info)
+  device.send(&mut port, CMD_ID(DeviceIDReportRequest{}));
 
   let mut read_buffer: [u8; 1] = [0];
-  port.write(&packet).expect("Write failed!");
+  // port.write(&packet).expect("Write failed!");
   loop {
     match port.read(&mut read_buffer) {
       Ok(bytes) => {
