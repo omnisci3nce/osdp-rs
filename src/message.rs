@@ -3,12 +3,6 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{self, Display};
 
-// A message must implement the following functions
-/*pub trait Message {
-  /** Returns Some for expected data in bytes and None when the data length is variable */
-  fn data_length(&self) -> Option<i32>;
-}*/
-
 pub trait DataBlock {
   fn serialise(&self) -> Vec<u8>;
   fn deserialise(bytes: &[u8]) -> Self;
@@ -26,14 +20,22 @@ pub struct Poll {} // 0x60
 pub struct ReaderLED {} // 0x69
 
 pub struct DeviceIDReportRequest {}
-impl DeviceIDReportRequest {
+impl DataBlock for DeviceIDReportRequest {
+  fn deserialise(_bytes: &[u8]) -> Self {
+    DeviceIDReportRequest {}
+  }
+
   fn serialise(&self) -> Vec<u8> {
     Vec::from([0x00])
   }
 }
 
 pub struct DeviceCapabilitiesRequest {}
-impl DeviceCapabilitiesRequest {
+impl DataBlock for DeviceCapabilitiesRequest {
+  fn deserialise(_bytes: &[u8]) -> Self {
+    DeviceCapabilitiesRequest {}
+  }
+
   fn serialise(&self) -> Vec<u8> {
     Vec::from([0x00])
   }
@@ -120,7 +122,7 @@ const fn capability_code_to_str(code: u8) -> Option<&'static str> {
     10 => Some("Receive BufferSize"),
     11 => Some("Largest Combined Message Size"),
     12 => Some("Smart Card Support"),
-    _ => None
+    _ => None,
   }
 }
 
@@ -168,6 +170,25 @@ pub enum Message {
   REPLY_NAK(Nack),
   REPLY_PDID(DeviceIDReport),
   REPLY_PDCAP(DeviceCapabilitiesReport),
+}
+
+impl Message {
+  pub fn serialise(&self) -> Vec<u8> {
+    match self {
+      Self::CMD_ID(m) => m.serialise(),
+      Self::CMD_CAP(m) => m.serialise(),
+      _ => !panic!("unimplemented msg"),
+    }
+  }
+
+  pub fn msg_byte(&self) -> u8 {
+    match self {
+      Self::CMD_POLL(_) => 0x60,
+      Self::CMD_ID(_) => 0x61,
+      Self::CMD_CAP(_) => 0x62,
+      _ => !panic!("unimplemented msg"),
+    }
+  }
 }
 
 pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
