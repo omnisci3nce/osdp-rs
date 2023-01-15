@@ -7,7 +7,11 @@ pub struct BusDevice {
 }
 
 impl BusDevice {
-  pub fn send(&self, mut port: &mut Box<dyn SerialPort>, msg: &dyn DataBlock) -> Result<(), String> {
+  pub fn send(
+    &self,
+    mut port: &mut Box<dyn SerialPort>,
+    msg: &dyn DataBlock,
+  ) -> Result<(), String> {
     let data = msg.serialise();
     let len: u16 = 5 + 1 + data.len() as u16 + 1;
     let len_lsb = (len & 0xFF) as u8; // least significant byte
@@ -19,8 +23,7 @@ impl BusDevice {
     packet.push(len_lsb);
     packet.push(len_msb);
     packet.push(0x00);
-    //packet.push(msg.msg_byte());
-    packet.push(0x61);
+    packet.push(msg.msg_byte());
     for b in data {
       packet.push(b)
     }
@@ -30,6 +33,5 @@ impl BusDevice {
     port.write(&packet);
 
     Ok(())
-    
   }
 }

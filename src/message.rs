@@ -4,18 +4,24 @@ use std::error::Error;
 use std::fmt::{self, Display};
 
 pub trait DataBlock {
+  fn msg_byte(&self) -> u8;
   fn serialise(&self) -> Vec<u8>;
-  fn deserialise(bytes: &[u8]) -> Self where Self: Sized;
+  fn deserialise(bytes: &[u8]) -> Self
+  where
+    Self: Sized;
 }
 
 /* Commands
-   ======== */
+======== */
 
 pub struct Poll {} // 0x60
 pub struct ReaderLED {} // 0x69
 
 pub struct DeviceIDReportRequest {}
 impl DataBlock for DeviceIDReportRequest {
+  fn msg_byte(&self) -> u8 {
+    0x61
+  }
   fn deserialise(_bytes: &[u8]) -> Self {
     DeviceIDReportRequest {}
   }
@@ -27,6 +33,9 @@ impl DataBlock for DeviceIDReportRequest {
 
 pub struct DeviceCapabilitiesRequest {}
 impl DataBlock for DeviceCapabilitiesRequest {
+  fn msg_byte(&self) -> u8 {
+    0x62
+  }
   fn deserialise(_bytes: &[u8]) -> Self {
     DeviceCapabilitiesRequest {}
   }
@@ -37,7 +46,7 @@ impl DataBlock for DeviceCapabilitiesRequest {
 }
 
 /* Replies
-   ======= */
+======= */
 
 pub struct Ack {} // 0x40
 pub struct Nack {} // 0x41
@@ -66,6 +75,9 @@ impl fmt::Display for DeviceIDReport {
 }
 
 impl DataBlock for DeviceIDReport {
+  fn msg_byte(&self) -> u8 {
+    0x60
+  }
   fn deserialise(bytes: &[u8]) -> Self {
     if bytes.len() != 12 {
       panic!("Expected data block length of 12");
@@ -135,6 +147,9 @@ impl Display for DeviceCapabilitiesReport {
 }
 
 impl DataBlock for DeviceCapabilitiesReport {
+  fn msg_byte(&self) -> u8 {
+    0x62
+  }
   fn deserialise(bytes: &[u8]) -> Self {
     if bytes.len() % 3 != 0 {
       panic!("data block must be multiple of 3 byte structure.");
@@ -154,47 +169,23 @@ impl DataBlock for DeviceCapabilitiesReport {
   }
 }
 
-pub enum MsgType {
-  CMD_POLL,
-  CMD_ID,
-  CMD_CAP,
-
-  REPLY_ACK,
-  REPLY_NAK,
-  REPLY_PDID,
-  REPLY_PDCAP,
-}
-/*
-pub struct Message {
-  msg_type: MsgType,
-  data: &dyn DataBlock
+#[allow(non_camel_case_types)]
+pub enum Message {
+  CMD_POLL(Poll),
+  CMD_ID(DeviceIDReportRequest),
+  CMD_CAP(DeviceCapabilitiesRequest),
+  REPLY_PDID(DeviceIDReport),
+  REPLY_PDCAP(DeviceCapabilitiesReport),
 }
 
-impl Message {
-  pub fn serialise(&self) -> Vec<u8> {
-    self.data.serialise()
-  }
-
-  pub fn msg_byte(&self) -> u8 {
-    match self.msg_type {
-      _ => panic!("arrr")
-    }
-  }
-}
-*/
-
-pub enum MsgReply {
-  ReplyPdId(DeviceIDReport),
-}
-
-pub fn from_packet(p: Packet) -> Result<MsgReply, Box<dyn Error>> {
+pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
   match p.msg_type {
-    0x45 => Ok(MsgReply::ReplyPdId(DeviceIDReport::deserialise(
+    0x45 => Ok(Message::REPLY_PDID(DeviceIDReport::deserialise(
       &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)],
     ))),
-//    0x46 => Ok(Box::new(DeviceCapabilitiesReport::deserialise(
-//     &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)],
-//  ))),
+    0x46 => Ok(Message::REPLY_PDCAP(DeviceCapabilitiesReport::deserialise(
+      &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)],
+    ))),
     _ => Err("Unknown type")?,
   }
 }
