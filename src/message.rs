@@ -5,16 +5,11 @@ use std::fmt::{self, Display};
 
 pub trait DataBlock {
   fn serialise(&self) -> Vec<u8>;
-  fn deserialise(bytes: &[u8]) -> Self;
+  fn deserialise(bytes: &[u8]) -> Self where Self: Sized;
 }
 
-pub trait Command {}
-pub trait Reply {}
-
-/*
-  Commands
-  ========
-*/
+/* Commands
+   ======== */
 
 pub struct Poll {} // 0x60
 pub struct ReaderLED {} // 0x69
@@ -41,10 +36,8 @@ impl DataBlock for DeviceCapabilitiesRequest {
   }
 }
 
-/*
-  Replies
-  =======
-*/
+/* Replies
+   ======= */
 
 pub struct Ack {} // 0x40
 pub struct Nack {} // 0x41
@@ -161,44 +154,47 @@ impl DataBlock for DeviceCapabilitiesReport {
   }
 }
 
-pub enum Message {
-  CMD_POLL(Poll),
-  CMD_ID(DeviceIDReportRequest),
-  CMD_CAP(DeviceCapabilitiesRequest),
+pub enum MsgType {
+  CMD_POLL,
+  CMD_ID,
+  CMD_CAP,
 
-  REPLY_ACK(Ack),
-  REPLY_NAK(Nack),
-  REPLY_PDID(DeviceIDReport),
-  REPLY_PDCAP(DeviceCapabilitiesReport),
+  REPLY_ACK,
+  REPLY_NAK,
+  REPLY_PDID,
+  REPLY_PDCAP,
+}
+/*
+pub struct Message {
+  msg_type: MsgType,
+  data: &dyn DataBlock
 }
 
 impl Message {
   pub fn serialise(&self) -> Vec<u8> {
-    match self {
-      Self::CMD_ID(m) => m.serialise(),
-      Self::CMD_CAP(m) => m.serialise(),
-      _ => !panic!("unimplemented msg"),
-    }
+    self.data.serialise()
   }
 
   pub fn msg_byte(&self) -> u8 {
-    match self {
-      Self::CMD_POLL(_) => 0x60,
-      Self::CMD_ID(_) => 0x61,
-      Self::CMD_CAP(_) => 0x62,
-      _ => !panic!("unimplemented msg"),
+    match self.msg_type {
+      _ => panic!("arrr")
     }
   }
 }
+*/
 
-pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
+pub enum MsgReply {
+  ReplyPdId(DeviceIDReport),
+}
+
+pub fn from_packet(p: Packet) -> Result<MsgReply, Box<dyn Error>> {
   match p.msg_type {
-    0x45 => Ok(Message::REPLY_PDID(DeviceIDReport::deserialise(
+    0x45 => Ok(MsgReply::ReplyPdId(DeviceIDReport::deserialise(
       &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)],
     ))),
-    0x46 => Ok(Message::REPLY_PDCAP(DeviceCapabilitiesReport::deserialise(
-      &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)],
-    ))),
+//    0x46 => Ok(Box::new(DeviceCapabilitiesReport::deserialise(
+//     &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)],
+//  ))),
     _ => Err("Unknown type")?,
   }
 }

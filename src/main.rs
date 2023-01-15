@@ -1,6 +1,6 @@
 use osdp_rs::crc::calc_checksum;
 use osdp_rs::device::BusDevice;
-use osdp_rs::message::{Message::CMD_ID, from_packet, DeviceIDReportRequest};
+use osdp_rs::message::{ DeviceIDReportRequest, DataBlock, from_packet};
 use osdp_rs::packet::Packet;
 use osdp_rs::parser::Parser;
 use std::io;
@@ -15,14 +15,13 @@ fn main() {
   println!("{:?}", &builder);
   let mut port = builder.open().expect("Failed to open port");
 
-
-
   let device = BusDevice {
-    address: 0x0A,
+    address: 0x00,
   };
 
   // Send a packet for testing (requests device info)
-  device.send(&mut port, CMD_ID(DeviceIDReportRequest{}));
+  let db = DeviceIDReportRequest{};
+  device.send(&mut port, &db);
 
   let mut read_buffer: [u8; 1] = [0];
   // port.write(&packet).expect("Write failed!");
@@ -39,8 +38,8 @@ fn main() {
             // TODO: Remove a lot of this match nesting
             match msg {
               Ok(msg) => match msg {
-                osdp_rs::message::Message::REPLY_PDID(d) => println!("{}", d),
-                osdp_rs::message::Message::REPLY_PDCAP(d) => println!("{}", d),
+                osdp_rs::message::MsgReply::ReplyPdId(d) => println!("{}", d),
+ //               osdp_rs::message::Message::REPLY_PDCAP(d) => println!("{}", d),
                 _ => (),
               },
               Err(_e) => panic!("Error deserialising packet to message!"),
