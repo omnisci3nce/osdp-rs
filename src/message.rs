@@ -1,5 +1,4 @@
 use crate::packet::Packet;
-use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{self, Display};
 
@@ -15,6 +14,19 @@ pub trait DataBlock {
 ======== */
 
 pub struct Poll {} // 0x60
+impl DataBlock for Poll {
+  fn msg_byte(&self) -> u8 {
+    0x60
+  }
+  fn deserialise(_bytes: &[u8]) -> Self {
+    Poll {}
+  }
+
+  fn serialise(&self) -> Vec<u8> {
+    Vec::from([0x00])
+  }
+}
+
 pub struct ReaderLED {} // 0x69
 
 pub struct DeviceIDReportRequest {}
@@ -169,6 +181,35 @@ impl DataBlock for DeviceCapabilitiesReport {
   }
 }
 
+#[derive(Debug)]
+pub struct KeypadDataReport {
+  reader_num: u8,
+  digit_count: u8,
+  digits: Vec<u8>
+}
+impl DataBlock for KeypadDataReport {
+  fn msg_byte(&self) -> u8 {
+    0x53
+  }
+  fn deserialise(bytes: &[u8]) -> Self {
+    let reader_num = bytes[0];
+    let digit_count = bytes[1];
+    if bytes.len() > (2 + digit_count) as usize {
+      panic!("data length should be two bytes + number of digit count");
+  }
+    let digits_copy = bytes[2..].to_vec();
+    KeypadDataReport{
+      reader_num,
+      digit_count,
+      digits: digits_copy
+    }
+
+  }
+  fn serialise(&self) -> Vec<u8> {
+    todo!("TODO");
+  }
+}
+
 #[allow(non_camel_case_types)]
 pub enum Message {
   CMD_POLL(Poll),
@@ -176,16 +217,15 @@ pub enum Message {
   CMD_CAP(DeviceCapabilitiesRequest),
   REPLY_PDID(DeviceIDReport),
   REPLY_PDCAP(DeviceCapabilitiesReport),
+  REPLY_KEYPAD(KeypadDataReport),
 }
 
 pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
+  let data_slice = &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)];
   match p.msg_type {
-    0x45 => Ok(Message::REPLY_PDID(DeviceIDReport::deserialise(
-      &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)],
-    ))),
-    0x46 => Ok(Message::REPLY_PDCAP(DeviceCapabilitiesReport::deserialise(
-      &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)],
-    ))),
-    _ => Err("Unknown type")?,
+    0x45 => Ok(Message::REPLY_PDID(DeviceIDReport::deserialise(data_slice))),
+    0x46 => Ok(Message::REPLY_PDCAP(DeviceCapabilitiesReport::deserialise(data_slice))),
+    0x53 => Ok(Message::REPLY_KEYPAD(KeypadDataReport::deserialise(data_slice))),
+    _ => Err("Unknown or unimplemented msg type")?,
   }
 }

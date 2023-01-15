@@ -130,4 +130,3 @@ impl Parser {
     self.expected_data_len = 0;
   }
 }
-

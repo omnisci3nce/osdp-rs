@@ -1,6 +1,8 @@
 use osdp_rs::crc::calc_checksum;
 use osdp_rs::device::BusDevice;
-use osdp_rs::message::{from_packet, DataBlock, DeviceCapabilitiesRequest};
+use osdp_rs::message::{
+  from_packet, DataBlock, DeviceCapabilitiesRequest, DeviceIDReportRequest, Poll,
+};
 use osdp_rs::packet::Packet;
 use osdp_rs::parser::Parser;
 use std::io;
@@ -18,7 +20,7 @@ fn main() {
   let device = BusDevice { address: 0x00 };
 
   // Send a packet for testing (requests device info)
-  let db = DeviceCapabilitiesRequest {};
+  let db = Poll {};
   device.send(&mut port, &db);
 
   let mut read_buffer: [u8; 1] = [0];
@@ -36,6 +38,7 @@ fn main() {
               Ok(msg) => match msg {
                 osdp_rs::message::Message::REPLY_PDID(d) => println!("{}", d),
                 osdp_rs::message::Message::REPLY_PDCAP(d) => println!("{}", d),
+                osdp_rs::message::Message::REPLY_KEYPAD(d) => println!("{:?}", d),
                 _ => (),
               },
               Err(_e) => panic!("Error deserialising packet to message!"),
