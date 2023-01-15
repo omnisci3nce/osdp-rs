@@ -22,7 +22,6 @@ fn main() {
   device.send(&mut port, &db);
 
   let mut read_buffer: [u8; 1] = [0];
-  // port.write(&packet).expect("Write failed!");
   loop {
     match port.read(&mut read_buffer) {
       Ok(bytes) => {
@@ -33,7 +32,6 @@ fn main() {
             println!("Complete packet received: {:?}", p);
             // Attempt to deserialise it
             let msg = from_packet(p);
-            // TODO: Remove a lot of this match nesting
             match msg {
               Ok(msg) => match msg {
                 osdp_rs::message::Message::REPLY_PDID(d) => println!("{}", d),
