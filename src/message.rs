@@ -185,7 +185,7 @@ impl DataBlock for DeviceCapabilitiesReport {
 pub struct KeypadDataReport {
   reader_num: u8,
   digit_count: u8,
-  digits: Vec<u8>
+  digits: Vec<u8>,
 }
 impl DataBlock for KeypadDataReport {
   fn msg_byte(&self) -> u8 {
@@ -196,14 +196,13 @@ impl DataBlock for KeypadDataReport {
     let digit_count = bytes[1];
     if bytes.len() > (2 + digit_count) as usize {
       panic!("data length should be two bytes + number of digit count");
-  }
+    }
     let digits_copy = bytes[2..].to_vec();
-    KeypadDataReport{
+    KeypadDataReport {
       reader_num,
       digit_count,
-      digits: digits_copy
+      digits: digits_copy,
     }
-
   }
   fn serialise(&self) -> Vec<u8> {
     todo!("TODO");
@@ -224,8 +223,12 @@ pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
   let data_slice = &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)];
   match p.msg_type {
     0x45 => Ok(Message::REPLY_PDID(DeviceIDReport::deserialise(data_slice))),
-    0x46 => Ok(Message::REPLY_PDCAP(DeviceCapabilitiesReport::deserialise(data_slice))),
-    0x53 => Ok(Message::REPLY_KEYPAD(KeypadDataReport::deserialise(data_slice))),
+    0x46 => Ok(Message::REPLY_PDCAP(DeviceCapabilitiesReport::deserialise(
+      data_slice,
+    ))),
+    0x53 => Ok(Message::REPLY_KEYPAD(KeypadDataReport::deserialise(
+      data_slice,
+    ))),
     _ => Err("Unknown or unimplemented msg type")?,
   }
 }
