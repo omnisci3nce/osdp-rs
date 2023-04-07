@@ -15,8 +15,7 @@ pub enum ValidationType {
 
 impl Packet {
   pub fn has_sch(&self) -> bool {
-    let scb_bit_set = self.msg_ctrl_info & 0x08 != 0;
-    scb_bit_set
+    self.msg_ctrl_info & 0x08 != 0
   }
 
   pub fn validation_len(&self) -> u16 {

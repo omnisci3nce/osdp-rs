@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::packet::Packet;
 use std::error::Error;
 use std::fmt::{self, Display};
@@ -101,7 +102,7 @@ impl DataBlock for DeviceIDReport {
       | ((bytes[8] as u32) << 24);
     let firmware = format!("{}.{}.{}", bytes[9], bytes[10], bytes[11]);
     DeviceIDReport {
-      vendor_code: vendor_code,
+      vendor_code,
       model_no: bytes[3],
       model_version: bytes[4],
       serial_number: serial,
@@ -146,11 +147,10 @@ const fn capability_code_to_str(code: u8) -> Option<&'static str> {
 impl Display for DeviceCapabilitiesReport {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     for ele in &self.capabilities {
-      write!(
+      writeln!(
         f,
-        "  Function: {}  Compliance: {}\n",
-        capability_code_to_str(ele.function_code)
-          .unwrap_or(&String::from(ele.function_code.to_string())),
+        "  Function: {}  Compliance: {}",
+        capability_code_to_str(ele.function_code).unwrap_or(&ele.function_code.to_string()),
         ele.compliance
       )?;
     }

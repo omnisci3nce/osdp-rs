@@ -1,4 +1,5 @@
 use serialport::SerialPort;
+use std::io::Error;
 
 use crate::{crc::calc_checksum, message::DataBlock};
 
@@ -7,11 +8,7 @@ pub struct BusDevice {
 }
 
 impl BusDevice {
-  pub fn send(
-    &self,
-    mut port: &mut Box<dyn SerialPort>,
-    msg: &dyn DataBlock,
-  ) -> Result<(), String> {
+  pub fn send(&self, port: &mut Box<dyn SerialPort>, msg: &dyn DataBlock) -> Result<(), Error> {
     let data = msg.serialise();
     let len: u16 = 5 + 1 + data.len() as u16 + 1;
     let len_lsb = (len & 0xFF) as u8; // least significant byte
@@ -30,7 +27,7 @@ impl BusDevice {
     let chksum = calc_checksum(&packet);
     packet.push(chksum);
 
-    port.write(&packet);
+    let _len = port.write(&packet)?;
 
     Ok(())
   }

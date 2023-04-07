@@ -9,6 +9,7 @@
 
 use crate::packet::Packet;
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, PartialEq)]
 enum ParserState {
   WaitingSOM,
@@ -128,5 +129,11 @@ impl Parser {
     self.buffer.clear();
     self.temp_packet = Packet::default();
     self.expected_data_len = 0;
+  }
+}
+
+impl Default for Parser {
+  fn default() -> Self {
+    Self::new()
   }
 }
