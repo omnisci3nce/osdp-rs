@@ -1,16 +1,17 @@
 use deku::prelude::*;
 
-const MAX_PACKET_SIZE: usize = 128; // spec defines this
-const MAX_DATA_LEN: usize = MAX_PACKET_SIZE - 5 - 2; // max packet size minus header and checksum
+pub const MAX_PACKET_SIZE: usize = 128; // spec defines this
+pub const MAX_DATA_LEN: usize = MAX_PACKET_SIZE - 5 - 2; // max packet size minus header and checksum
 
 /* A packet is constructed like [PacketHeader - PacketDataBlock - PacketValidation] */
+#[derive(Clone)]
 pub struct Packet {
     pub header: PacketHeader,
     pub data: [u8; MAX_DATA_LEN],
     pub checksum: PacketValidation,
 }
 
-#[derive(Debug, DekuRead, DekuWrite)]
+#[derive(Debug, Default, Clone, DekuRead, DekuWrite)]
 pub struct PacketHeader {
     pub address: u8,
     pub length: u16,
@@ -57,6 +58,22 @@ impl PacketHeader {
         match is_bit_set {
             true => ValidationType::CRC16,
             false => ValidationType::Checksum,
+        }
+    }
+}
+
+impl Default for PacketValidation {
+    fn default() -> Self {
+        PacketValidation::Checksum(0)
+    }
+}
+
+impl Default for Packet {
+    fn default() -> Self {
+        Self {
+            data: [0; MAX_DATA_LEN],
+            header: Default::default(),
+            checksum: Default::default(),
         }
     }
 }

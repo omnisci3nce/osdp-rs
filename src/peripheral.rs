@@ -1,10 +1,8 @@
-
-pub struct Peripheral {
-
-}
+#[derive(Debug, Default)]
+pub struct Peripheral {}
 
 impl Peripheral {
-  pub fn new() -> Self {
-    Peripheral {  }
-  }
+    pub fn new() -> Self {
+        Peripheral {}
+    }
 }

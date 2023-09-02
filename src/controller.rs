@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use crate::{device::BusDevice, errors::OSDPError};
 
 /// Controller has address of 0x00
+#[derive(Default)]
 pub struct Controller {
     /// address -> device
     devices: HashMap<u8, BusDevice>,
@@ -17,13 +18,13 @@ pub struct Controller {
 impl Controller {
     pub fn new() -> Self {
         Self {
-            devices: HashMap::new()
+            devices: HashMap::new(),
         }
     }
 
     pub fn register_device(mut self, device: BusDevice) -> Result<(), OSDPError> {
         if self.devices.contains_key(&device.address) {
-            return Err(OSDPError::AddressInUse)
+            return Err(OSDPError::AddressInUse);
         }
         self.devices.insert(device.address, device);
         Ok(())
