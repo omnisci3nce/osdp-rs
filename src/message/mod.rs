@@ -1,5 +1,7 @@
+use deku::DekuError;
+
 use crate::packet::Packet;
-use std::{error::Error, io::Write};
+use std::error::Error;
 
 pub mod card_data;
 pub mod device_capabilities;
@@ -11,6 +13,7 @@ use self::{
     device_capabilities::{DeviceCapabilitiesReport, DeviceCapabilitiesRequest},
     device_identification::{DeviceIDRequest, DeviceIdentification},
     keypad_data::KeypadData,
+    markers::Command,
     poll::Poll,
 };
 
@@ -25,21 +28,44 @@ pub enum Message {
     REPLY_KEYPAD(KeypadData),
 }
 
+/// HACK: this will be changed its just to test out the [`Command`] default serialize implementation
+#[derive(Debug)]
+pub struct SerializationError;
+
 // marker traits
 pub(crate) mod markers {
-    pub trait Command {}
+    use super::SerializationError;
+    use deku::DekuContainerWrite;
+    use std::io::Write;
+
+    pub trait Command: DekuContainerWrite {
+        fn serialize(&self, mut buf: &mut [u8]) -> Result<(), SerializationError> {
+            let output = self.to_bytes()?;
+            Ok(buf.write_all(output.as_slice())?)
+        }
+    }
     pub trait Reply {}
 }
 
+impl From<DekuError> for SerializationError {
+    fn from(_value: DekuError) -> Self {
+        SerializationError
+    }
+}
+impl From<std::io::Error> for SerializationError {
+    fn from(_value: std::io::Error) -> Self {
+        SerializationError
+    }
+}
+
+// TODO: macro for cooercing to a internal error type
+
 impl Message {
-    pub fn serialize(&self, mut buf: &mut [u8]) {
+    pub fn serialize(&self, buf: &mut [u8]) {
         // TODO: return Result
 
         match self {
-            Message::CMD_POLL(p) => {
-                let output: Vec<u8> = (*p).try_into().unwrap();
-                buf.write_all(output.as_slice()).unwrap()
-            },
+            Message::CMD_POLL(p) => p.serialize(buf).unwrap(),
             _ => unimplemented!()
             // Message::CMD_ID(_) => todo!(),
             // Message::CMD_CAP(_) => todo!(),
@@ -50,6 +76,7 @@ impl Message {
     }
 }
 
+// TODO: completely overhaul this
 pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
     let data_slice = &p.data[5..(p.data.len() - p.header.validation_len() as usize)];
     match p.header.msg_type {
