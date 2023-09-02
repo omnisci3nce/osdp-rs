@@ -1,5 +1,6 @@
 use osdp_rs::device::BusDevice;
-use osdp_rs::message::{from_packet, Poll};
+use osdp_rs::message::from_packet;
+use osdp_rs::message::poll::Poll;
 use osdp_rs::packet::Packet;
 use osdp_rs::parser::Parser;
 use std::error::Error;
@@ -18,8 +19,8 @@ fn main() -> Result<(), Box<dyn Error>> {
   let device = BusDevice { address: 0x00 };
 
   // Send a packet for testing (requests device info)
-  let db = Poll {};
-  device.send(&mut port, &db)?;
+  // let poll = Poll {};
+  device.send(&mut port)?;
 
   let mut read_buffer: [u8; 1] = [0];
   loop {
@@ -33,8 +34,8 @@ fn main() -> Result<(), Box<dyn Error>> {
           let msg = from_packet(p);
           match msg {
             Ok(msg) => match msg {
-              osdp_rs::message::Message::REPLY_PDID(d) => println!("{}", d),
-              osdp_rs::message::Message::REPLY_PDCAP(d) => println!("{}", d),
+              osdp_rs::message::Message::REPLY_PDID(d) => println!("{:#?}", d),
+              // osdp_rs::message::Message::REPLY_PDCAP(d) => println!("{}", d),
               osdp_rs::message::Message::REPLY_KEYPAD(d) => println!("{:?}", d),
               _ => (),
             },
