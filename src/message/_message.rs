@@ -1,14 +1,14 @@
-use crate::packet::Packet;
-use std::error::Error;
-use std::fmt::{self, Display};
+// use crate::packet::Packet;
+// use std::error::Error;
+// use std::fmt::{self, Display};
 
-pub trait DataBlock {
-  fn msg_byte(&self) -> u8;
-  fn serialise(&self) -> Vec<u8>;
-  fn deserialise(bytes: &[u8]) -> Self
-  where
-    Self: Sized;
-}
+// pub trait DataBlock {
+//   fn msg_byte(&self) -> u8;
+//   fn serialise(&self) -> Vec<u8>;
+//   fn deserialise(bytes: &[u8]) -> Self
+//   where
+//     Self: Sized;
+// }
 
 /* Commands
 ======== */

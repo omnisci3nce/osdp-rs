@@ -1,8 +1,6 @@
 use serialport::SerialPort;
 use std::io::Error;
 
-// use crate::{crc::calc_checksum, message::DataBlock};
-
 pub struct BusDevice {
     pub address: u8,
 }

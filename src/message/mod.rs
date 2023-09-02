@@ -1,22 +1,27 @@
+use crate::packet::Packet;
+use std::{error::Error, io::Write};
+
 pub mod card_data;
-pub mod device_report;
+pub mod device_capabilities;
+pub mod device_identification;
 pub mod keypad_data;
 pub mod poll;
 
-use std::error::Error;
-
-use crate::packet::Packet;
-
-use self::{device_report::DeviceIdentification, keypad_data::KeypadData, poll::Poll};
+use self::{
+    device_capabilities::{DeviceCapabilitiesReport, DeviceCapabilitiesRequest},
+    device_identification::{DeviceIDRequest, DeviceIdentification},
+    keypad_data::KeypadData,
+    poll::Poll,
+};
 
 /// Every type of OSDP message that is currently handled
 #[allow(non_camel_case_types)]
 pub enum Message {
     CMD_POLL(Poll),
-    //   CMD_ID(DeviceIDReportRequest),
-    //   CMD_CAP(DeviceCapabilitiesRequest),
+    CMD_ID(DeviceIDRequest),
+    CMD_CAP(DeviceCapabilitiesRequest),
     REPLY_PDID(DeviceIdentification),
-    //   REPLY_PDCAP(DeviceCapabilitiesReport),
+    REPLY_PDCAP(DeviceCapabilitiesReport),
     REPLY_KEYPAD(KeypadData),
 }
 
@@ -26,9 +31,28 @@ pub(crate) mod markers {
     pub trait Reply {}
 }
 
+impl Message {
+    pub fn serialize(&self, mut buf: &mut [u8]) {
+        // TODO: return Result
+
+        match self {
+            Message::CMD_POLL(p) => {
+                let output: Vec<u8> = (*p).try_into().unwrap();
+                buf.write_all(output.as_slice()).unwrap()
+            },
+            _ => unimplemented!()
+            // Message::CMD_ID(_) => todo!(),
+            // Message::CMD_CAP(_) => todo!(),
+            // Message::REPLY_PDID(_) => todo!(),
+            // Message::REPLY_PDCAP(_) => todo!(),
+            // Message::REPLY_KEYPAD(_) => todo!(),
+        }
+    }
+}
+
 pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
-    let data_slice = &p.buffer[5..(p.buffer.len() - p.validation_len() as usize)];
-    match p.msg_type {
+    let data_slice = &p.data[5..(p.data.len() - p.header.validation_len() as usize)];
+    match p.header.msg_type {
         0x45 => Ok(Message::REPLY_PDID(
             DeviceIdentification::try_from(data_slice).unwrap(),
         )),

@@ -8,4 +8,6 @@ pub(crate) fn calc_checksum(msg: &[u8]) -> u8 {
     lsb as u8
 }
 
-// TODO: calc_crc
+pub(crate) fn calc_crc(_msg: &[u8]) -> u8 {
+    todo!("Implement CRC")
+}
