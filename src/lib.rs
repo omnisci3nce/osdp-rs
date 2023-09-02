@@ -1,5 +1,5 @@
-pub mod integrity;
 pub mod device;
+pub mod integrity;
+pub mod message;
 pub mod packet;
 pub mod parser;
-pub mod message;
