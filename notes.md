@@ -1,4 +1,3 @@
-```
 platform-agnostic
 -----------------
 parser
@@ -11,15 +10,9 @@ busy-loop?
 
 Overall control flow - pseudocode
 
-populate fixed sized header
 
-if SCB bit then we populate scb other wise skip to data
+Use phantom data for a peripheral device state
 
-data is either fixed-length or variable
-if fixed length we just look for X number of bytes
-else if variable we continue reading and extending expected data length
-based on data in message
-
-validation
-calc checksum or crc
-```
+- `register_device()` -> device is now registered but we havent check its identification / capabilities
+- next poll loops we will send PDID and PDCAP
+- change its state to `<Identified>` ?

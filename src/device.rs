@@ -1,4 +1,3 @@
-
 pub struct BusDevice {
     pub address: u8,
 }

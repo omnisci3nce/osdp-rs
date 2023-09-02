@@ -10,7 +10,7 @@ pub const MAX_PACKET_SIZE: usize = 128;
 pub const MAX_DATA_LEN: usize = MAX_PACKET_SIZE - 5 - 2;
 
 /// An OSDP packet
-#[derive(Debug, Clone, DekuWrite)]
+#[derive(Debug, Clone, DekuWrite, Default)]
 pub struct Packet {
     pub header: PacketHeader,
     // pub data: [u8; MAX_DATA_LEN],
@@ -82,7 +82,7 @@ impl Packet {
         let header = PacketHeader {
             address,
             length: 5 + len + 2,
-            msg_ctrl_info: 0x00,
+            msg_ctrl_info: 0x00, // FIXME
             msg_type: msg.msg_type(),
         };
         Packet {
@@ -96,16 +96,5 @@ impl Packet {
 impl Default for PacketValidation {
     fn default() -> Self {
         PacketValidation::Checksum(0)
-    }
-}
-
-impl Default for Packet {
-    fn default() -> Self {
-        Self {
-            // data: [0; MAX_DATA_LEN],
-            data: vec![],
-            header: Default::default(),
-            checksum: Default::default(),
-        }
     }
 }

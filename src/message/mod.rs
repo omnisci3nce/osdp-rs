@@ -46,7 +46,9 @@ pub(crate) mod markers {
             Ok(output.len() as u16)
         }
     }
-    pub trait Reply {}
+    pub trait Reply {
+        fn msg_byte(&self) -> u8;
+    }
 }
 
 impl From<DekuError> for SerializationError {
@@ -73,9 +75,12 @@ impl Message {
         // TODO: return Result
 
         match self {
-            Message::CMD_POLL(p) => p.serialize(buf).unwrap(),
+            Message::CMD_POLL(_) => {
+                buf[0] = 0x00;
+                1
+            }
             Message::CMD_ID(p) => p.serialize(buf).unwrap(),
-            _ => todo!()
+            _ => todo!(),
         }
     }
 }

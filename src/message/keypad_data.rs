@@ -13,7 +13,11 @@ pub struct KeypadData {
     digits: Vec<u8>,
 }
 
-impl Reply for KeypadData {}
+impl Reply for KeypadData {
+    fn msg_byte(&self) -> u8 {
+        0x53
+    }
+}
 
 impl KeypadData {
     /// return the keypad digits as an ascii string

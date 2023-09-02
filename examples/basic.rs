@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let acu = Controller::new();
 
     let known_device_1 = BusDevice { address: 0x01 };
-    acu.register_device(known_device_1).unwrap();
+    acu.register_pd(known_device_1).unwrap();
 
     let mut parser = Parser::new();
 

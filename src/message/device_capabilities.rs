@@ -11,14 +11,15 @@ struct Capability {
     number_of: u8,
 }
 
+/// osdp_CAP - PD Capabilities Request
 #[derive(Debug, PartialEq, DekuRead, DekuWrite)]
 pub struct DeviceCapabilitiesRequest {} // TODO: this should serialise to 0x00
 
 impl Command for DeviceCapabilitiesRequest {
     #[inline]
     fn msg_byte(&self) -> u8 {
-        0x00
-    } // FIXME: update byte
+        0x62
+    }
 }
 
 #[derive(Debug, DekuWrite)] // TODO: DekuRead
@@ -26,7 +27,11 @@ pub struct DeviceCapabilitiesReport {
     capabilities: Vec<Capability>,
 }
 
-impl Reply for DeviceCapabilitiesRequest {}
+impl Reply for DeviceCapabilitiesRequest {
+    fn msg_byte(&self) -> u8 {
+        0x46
+    }
+}
 
 const fn capability_code_to_str(code: u8) -> Option<&'static str> {
     match code {

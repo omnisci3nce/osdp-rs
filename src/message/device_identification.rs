@@ -10,7 +10,7 @@ pub struct DeviceIDRequest {}
 impl Command for DeviceIDRequest {
     #[inline]
     fn msg_byte(&self) -> u8 {
-        0x45
+        0x61
     }
 }
 
@@ -40,7 +40,12 @@ impl Display for DeviceIdentification {
     }
 }
 
-impl Reply for DeviceIdentification {}
+impl Reply for DeviceIdentification {
+    #[inline]
+    fn msg_byte(&self) -> u8 {
+        0x45
+    }
+}
 
 #[cfg(test)]
 mod tests {
