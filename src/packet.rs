@@ -1,13 +1,20 @@
+use std::vec;
+
 use deku::prelude::*;
 
-pub const MAX_PACKET_SIZE: usize = 128; // spec defines this
-pub const MAX_DATA_LEN: usize = MAX_PACKET_SIZE - 5 - 2; // max packet size minus header and checksum
+use crate::{integrity::calc_checksum, message::Message};
 
-/* A packet is constructed like [PacketHeader - PacketDataBlock - PacketValidation] */
-#[derive(Clone)]
+/// spec defines this
+pub const MAX_PACKET_SIZE: usize = 128;
+/// max packet size minus header and checksum
+pub const MAX_DATA_LEN: usize = MAX_PACKET_SIZE - 5 - 2;
+
+/// An OSDP packet
+#[derive(Debug, Clone, DekuWrite)]
 pub struct Packet {
     pub header: PacketHeader,
-    pub data: [u8; MAX_DATA_LEN],
+    // pub data: [u8; MAX_DATA_LEN],
+    pub data: Vec<u8>,
     pub checksum: PacketValidation,
 }
 
@@ -19,9 +26,12 @@ pub struct PacketHeader {
     pub msg_type: u8,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, DekuWrite)]
+#[deku(type = "u8")]
 pub enum PacketValidation {
+    #[deku(id = "1")]
     Checksum(u8),
+    #[deku(id = "2")]
     CRC(u16),
 }
 
@@ -62,6 +72,27 @@ impl PacketHeader {
     }
 }
 
+impl Packet {
+    pub fn construct_from_msg(address: u8, msg: &Message) -> Self {
+        // let mut data = [0; MAX_DATA_LEN];
+        let mut data: Vec<u8> = vec![];
+        let len = msg.serialize(&mut data);
+
+        let checksum = PacketValidation::Checksum(calc_checksum(&data));
+        let header = PacketHeader {
+            address,
+            length: 5 + len + 2,
+            msg_ctrl_info: 0x00,
+            msg_type: msg.msg_type(),
+        };
+        Packet {
+            header,
+            data,
+            checksum,
+        }
+    }
+}
+
 impl Default for PacketValidation {
     fn default() -> Self {
         PacketValidation::Checksum(0)
@@ -71,7 +102,8 @@ impl Default for PacketValidation {
 impl Default for Packet {
     fn default() -> Self {
         Self {
-            data: [0; MAX_DATA_LEN],
+            // data: [0; MAX_DATA_LEN],
+            data: vec![],
             header: Default::default(),
             checksum: Default::default(),
         }

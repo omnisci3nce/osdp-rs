@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 use crate::{device::BusDevice, errors::OSDPError};
 
-/// Controller has address of 0x00
+/// Controller
 #[derive(Default)]
 pub struct Controller {
     /// address -> device

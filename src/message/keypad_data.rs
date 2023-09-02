@@ -36,6 +36,10 @@ mod tests {
         .as_ref();
         let test_keypad = KeypadData::try_from(test_data).unwrap();
         dbg!(&test_keypad);
-        println!("{}", test_keypad.ascii());
+        println!(
+            "Reader {} Digits: {}",
+            test_keypad.reader_num,
+            test_keypad.ascii()
+        );
     }
 }

@@ -39,9 +39,11 @@ pub(crate) mod markers {
     use std::io::Write;
 
     pub trait Command: DekuContainerWrite {
-        fn serialize(&self, mut buf: &mut [u8]) -> Result<(), SerializationError> {
+        fn msg_byte(&self) -> u8;
+        fn serialize(&self, mut buf: &mut [u8]) -> Result<u16, SerializationError> {
             let output = self.to_bytes()?;
-            Ok(buf.write_all(output.as_slice())?)
+            buf.write_all(output.as_slice())?;
+            Ok(output.len() as u16)
         }
     }
     pub trait Reply {}
@@ -61,13 +63,19 @@ impl From<std::io::Error> for SerializationError {
 // TODO: macro for cooercing to a internal error type
 
 impl Message {
-    pub fn serialize(&self, buf: &mut [u8]) {
+    pub fn msg_type(&self) -> u8 {
+        match self {
+            Message::CMD_ID(cmd) => cmd.msg_byte(),
+            _ => todo!(),
+        }
+    }
+    pub fn serialize(&self, buf: &mut [u8]) -> u16 {
         // TODO: return Result
 
         match self {
             Message::CMD_POLL(p) => p.serialize(buf).unwrap(),
-            _ => unimplemented!()
-            // Message::CMD_ID(_) => todo!(),
+            Message::CMD_ID(p) => p.serialize(buf).unwrap(),
+            _ => todo!()
             // Message::CMD_CAP(_) => todo!(),
             // Message::REPLY_PDID(_) => todo!(),
             // Message::REPLY_PDCAP(_) => todo!(),

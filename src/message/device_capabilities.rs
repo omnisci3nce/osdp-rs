@@ -14,7 +14,12 @@ struct Capability {
 #[derive(Debug, PartialEq, DekuRead, DekuWrite)]
 pub struct DeviceCapabilitiesRequest {} // TODO: this should serialise to 0x00
 
-impl Command for DeviceCapabilitiesRequest {}
+impl Command for DeviceCapabilitiesRequest {
+    #[inline]
+    fn msg_byte(&self) -> u8 {
+        0x00
+    } // FIXME: update byte
+}
 
 #[derive(Debug, DekuWrite)] // TODO: DekuRead
 pub struct DeviceCapabilitiesReport {

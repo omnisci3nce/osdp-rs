@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 deku = "0.16.0"
+log = "0.4.20"
+pretty_env_logger = "0.5.0"
 serialport = "4.2.0"
