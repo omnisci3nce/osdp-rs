@@ -76,10 +76,6 @@ impl Message {
             Message::CMD_POLL(p) => p.serialize(buf).unwrap(),
             Message::CMD_ID(p) => p.serialize(buf).unwrap(),
             _ => todo!()
-            // Message::CMD_CAP(_) => todo!(),
-            // Message::REPLY_PDID(_) => todo!(),
-            // Message::REPLY_PDCAP(_) => todo!(),
-            // Message::REPLY_KEYPAD(_) => todo!(),
         }
     }
 }
@@ -91,9 +87,6 @@ pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
         0x45 => Ok(Message::REPLY_PDID(
             DeviceIdentification::try_from(data_slice).unwrap(),
         )),
-        // 0x46 => Ok(Message::REPLY_PDCAP(DeviceCapabilitiesReport::deserialise(
-        //   data_slice,
-        // ))),
         0x53 => Ok(Message::REPLY_KEYPAD(
             KeypadData::try_from(data_slice).unwrap(),
         )),
