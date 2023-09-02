@@ -5,7 +5,7 @@ use osdp_rs::{
     controller::Controller,
     device::BusDevice,
     message::{device_identification::DeviceIDRequest, from_packet},
-    packet::Packet,
+    packet::{Packet, ValidationType},
     parser::Parser,
 };
 
@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("osdp-rs");
 
     let msg = osdp_rs::message::Message::CMD_ID(DeviceIDRequest {});
-    let packet = Packet::construct_from_msg(0x00, &msg);
+    let packet = Packet::construct_from_msg(0x00, ValidationType::Checksum, &msg);
     let buf: Vec<u8> = packet.to_bytes()?;
     dbg!(&buf);
 

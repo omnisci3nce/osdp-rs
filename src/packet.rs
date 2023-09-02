@@ -1,8 +1,11 @@
-use std::vec;
-
 use deku::prelude::*;
+use std::vec;
+use strum_macros::EnumDiscriminants;
 
-use crate::{integrity::calc_checksum, message::Message};
+use crate::{
+    integrity::{calc_checksum, calc_crc},
+    message::Message,
+};
 
 /// spec defines this
 pub const MAX_PACKET_SIZE: usize = 128;
@@ -15,7 +18,7 @@ pub struct Packet {
     pub header: PacketHeader,
     // pub data: [u8; MAX_DATA_LEN],
     pub data: Vec<u8>,
-    pub checksum: PacketValidation,
+    pub integrity: PacketValidation,
 }
 
 #[derive(Debug, Default, Clone, DekuRead, DekuWrite)]
@@ -26,18 +29,14 @@ pub struct PacketHeader {
     pub msg_type: u8,
 }
 
-#[derive(Debug, Clone, Copy, DekuWrite)]
+#[derive(Debug, Clone, Copy, DekuWrite, EnumDiscriminants)]
+#[strum_discriminants(name(ValidationType))]
 #[deku(type = "u8")]
 pub enum PacketValidation {
     #[deku(id = "1")]
     Checksum(u8),
     #[deku(id = "2")]
     CRC(u16),
-}
-
-pub enum ValidationType {
-    Checksum,
-    CRC16,
 }
 
 #[derive(Debug, DekuRead, DekuWrite)]
@@ -58,7 +57,7 @@ impl PacketHeader {
 
     pub fn validation_len(&self) -> u16 {
         match self.validation_type() {
-            ValidationType::CRC16 => 2,
+            ValidationType::CRC => 2,
             ValidationType::Checksum => 1,
         }
     }
@@ -66,19 +65,22 @@ impl PacketHeader {
     pub fn validation_type(&self) -> ValidationType {
         let is_bit_set = self.msg_ctrl_info & 0x04 != 0;
         match is_bit_set {
-            true => ValidationType::CRC16,
+            true => ValidationType::CRC,
             false => ValidationType::Checksum,
         }
     }
 }
 
 impl Packet {
-    pub fn construct_from_msg(address: u8, msg: &Message) -> Self {
+    pub fn construct_from_msg(address: u8, validation: ValidationType, msg: &Message) -> Self {
         // let mut data = [0; MAX_DATA_LEN];
         let mut data: Vec<u8> = vec![];
         let len = msg.serialize(&mut data);
 
-        let checksum = PacketValidation::Checksum(calc_checksum(&data));
+        let integrity = match validation {
+            ValidationType::Checksum => PacketValidation::Checksum(calc_checksum(&data)),
+            ValidationType::CRC => PacketValidation::CRC(calc_crc(&data)),
+        };
         let header = PacketHeader {
             address,
             length: 5 + len + 2,
@@ -88,7 +90,7 @@ impl Packet {
         Packet {
             header,
             data,
-            checksum,
+            integrity,
         }
     }
 }
