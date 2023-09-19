@@ -1,5 +1,5 @@
 use deku::prelude::*;
-use std::vec;
+use std::{default, vec};
 use strum_macros::EnumDiscriminants;
 
 use crate::{
@@ -11,6 +11,8 @@ use crate::{
 pub const MAX_PACKET_SIZE: usize = 128;
 /// max packet size minus header and checksum
 pub const MAX_DATA_LEN: usize = MAX_PACKET_SIZE - 5 - 2;
+
+pub(crate) type RequestID = u32;
 
 /// An OSDP packet
 #[derive(Debug, Clone, DekuWrite, Default)]
@@ -29,7 +31,7 @@ pub struct PacketHeader {
     pub msg_type: u8,
 }
 
-#[derive(Debug, Clone, Copy, DekuWrite, EnumDiscriminants)]
+#[derive(Debug, Clone, DekuWrite, EnumDiscriminants)]
 #[strum_discriminants(name(ValidationType))]
 #[deku(type = "u8")]
 pub enum PacketValidation {
@@ -48,6 +50,15 @@ pub struct MsgControlByte {
     #[deku(bits = "1")]
     scb_presence: u8,
     // remaining 4 bits are deprecated as part of the spec and thus unused
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub enum Sqn {
+    #[default]
+    Zero = 0,
+    One = 1,
+    Two = 2,
+    Three = 3,
 }
 
 impl PacketHeader {
@@ -72,7 +83,12 @@ impl PacketHeader {
 }
 
 impl Packet {
-    pub fn construct_from_msg(address: u8, validation: ValidationType, msg: &Message) -> Self {
+    pub fn construct_from_msg(
+        address: u8,
+        sqn_num: Sqn,
+        validation: ValidationType,
+        msg: &Message,
+    ) -> Self {
         // let mut data = [0; MAX_DATA_LEN];
         let mut data: Vec<u8> = vec![];
         let len = msg.serialize(&mut data);
@@ -98,5 +114,11 @@ impl Packet {
 impl Default for PacketValidation {
     fn default() -> Self {
         PacketValidation::Checksum(0)
+    }
+}
+
+impl Default for ValidationType {
+    fn default() -> Self {
+        ValidationType::Checksum
     }
 }

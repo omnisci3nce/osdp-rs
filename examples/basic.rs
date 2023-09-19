@@ -1,21 +1,14 @@
 use std::{error::Error, io, time::Duration};
 
-use deku::DekuContainerWrite;
 use osdp_rs::{
-    controller::Controller,
-    device::BusDevice,
+    controller::{Controller, ControllerOptions},
     message::{device_identification::DeviceIDRequest, from_packet},
-    packet::{Packet, ValidationType},
+    packet::Packet,
     parser::Parser,
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
     pretty_env_logger::init();
-
-    let acu = Controller::new();
-
-    let known_device_1 = BusDevice { address: 0x01 };
-    acu.register_pd(known_device_1).unwrap();
 
     let mut parser = Parser::new();
 
@@ -30,19 +23,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("osdp-rs");
 
     let msg = osdp_rs::message::Message::CMD_ID(DeviceIDRequest {});
-    let packet = Packet::construct_from_msg(0x00, ValidationType::Checksum, &msg);
-    let buf: Vec<u8> = packet.to_bytes()?;
-    dbg!(&buf);
 
     let builder = serialport::new("/dev/ttyUSB0", 9600).timeout(Duration::from_millis(20));
     println!("{:?}", &builder);
     let mut port = builder.open().expect("Failed to open port");
+    let mut acu = Controller::new(&mut port, ControllerOptions::default());
+    acu.enqueue_cmd(0x01, msg);
 
-    let _ = port.write(&buf)?;
+    let _ = acu.send_next().unwrap();
 
     let mut read_buffer: [u8; 1] = [0];
     loop {
-        match port.read(&mut read_buffer) {
+        match acu.port.read(&mut read_buffer) {
             Ok(_bytes) => {
                 let byte = read_buffer[0]; // the byte we just read in
                 let maybe_completed_packet: Option<Packet> = parser.parse_byte(byte);
@@ -53,7 +45,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     match msg {
                         Ok(msg) => match msg {
                             osdp_rs::message::Message::REPLY_PDID(d) => println!("{:#?}", d),
-                            // osdp_rs::message::Message::REPLY_PDCAP(d) => println!("{}", d),
+                            osdp_rs::message::Message::REPLY_PDCAP(d) => println!("{}", d),
                             osdp_rs::message::Message::REPLY_KEYPAD(d) => println!("{:?}", d),
                             _ => (),
                         },
