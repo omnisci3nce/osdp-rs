@@ -12,3 +12,11 @@ impl Command for Poll {
         0x60
     }
 }
+
+/// osdp_ACK - General acknowledge
+#[derive(Debug, DekuRead, DekuWrite)]
+pub struct Ack {}
+
+/// osdp_NAK - Negative acknowledge
+#[derive(Debug, DekuRead, DekuWrite)]
+pub struct Nack {}

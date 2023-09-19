@@ -6,7 +6,9 @@ use std::error::Error;
 pub mod card_data;
 pub mod device_capabilities;
 pub mod device_identification;
+pub mod encryption;
 pub mod keypad_data;
+pub mod led;
 pub mod poll;
 
 use self::{

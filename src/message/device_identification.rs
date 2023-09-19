@@ -1,8 +1,6 @@
-use std::fmt::Display;
-
-use deku::prelude::*;
-
 use super::markers::{Command, Reply};
+use deku::prelude::*;
+use std::fmt::Display;
 
 #[derive(Debug, DekuRead, DekuWrite)]
 pub struct DeviceIDRequest {}
