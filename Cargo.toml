@@ -5,10 +5,13 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = []
+std = []
+
 [dependencies]
-deku = "0.16.0"
-log = "0.4.20"
-pretty_env_logger = "0.5.0"
+heapless = "0.8.0"
+strum = { version = "0.26.3", features = ["derive"] }
+
+[dev-dependencies]
 serialport = "4.2.0"
-strum = "0.25.0"
-strum_macros = "0.25.2"

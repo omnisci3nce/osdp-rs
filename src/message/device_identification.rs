@@ -1,8 +1,6 @@
 use super::markers::{Command, Reply};
-use deku::prelude::*;
-use std::fmt::Display;
 
-#[derive(Debug, DekuRead, DekuWrite)]
+#[derive(Debug)]
 pub struct DeviceIDRequest {}
 
 impl Command for DeviceIDRequest {
@@ -12,9 +10,9 @@ impl Command for DeviceIDRequest {
     }
 }
 
-#[derive(Debug, DekuRead, DekuWrite)]
+#[derive(Debug)]
 pub struct DeviceIdentification {
-    #[deku(bits = "24")]
+    // #[deku(bits = "24")]
     vendor_code: u32,
     model_num: u8,
     model_version: u8,
@@ -24,19 +22,19 @@ pub struct DeviceIdentification {
     firmware_build: u8,
 }
 
-impl Display for DeviceIdentification {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-      f,
-      "DeviceIDReport (0x45):\n  Vendor Code: {}\n  Model Number: {}\n  Model Version: {}\n  Serial Number: {}\n  Firmware: {}.{}.{}\n",
-      self.vendor_code,
-      self.model_num,
-      self.model_version,
-      self.serial_number,
-      self.firmware_major, self.firmware_minor, self.firmware_build
-    )
-    }
-}
+// impl Display for DeviceIdentification {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         write!(
+//       f,
+//       "DeviceIDReport (0x45):\n  Vendor Code: {}\n  Model Number: {}\n  Model Version: {}\n  Serial Number: {}\n  Firmware: {}.{}.{}\n",
+//       self.vendor_code,
+//       self.model_num,
+//       self.model_version,
+//       self.serial_number,
+//       self.firmware_major, self.firmware_minor, self.firmware_build
+//     )
+//     }
+// }
 
 impl Reply for DeviceIdentification {
     #[inline]
@@ -67,7 +65,7 @@ mod tests {
         ]
         .as_ref();
 
-        let test_device = DeviceIdentification::try_from(test_data).unwrap();
-        dbg!(test_device);
+        // let test_device = DeviceIdentification::try_from(test_data).unwrap();
+        // dbg!(test_device);
     }
 }

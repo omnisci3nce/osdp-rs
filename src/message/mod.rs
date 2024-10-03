@@ -1,7 +1,4 @@
-use deku::DekuError;
-
 use crate::packet::Packet;
-use std::error::Error;
 
 pub mod card_data;
 pub mod device_capabilities;
@@ -37,15 +34,14 @@ pub struct SerializationError;
 // marker traits
 pub(crate) mod markers {
     use super::SerializationError;
-    use deku::DekuContainerWrite;
-    use std::io::Write;
 
-    pub trait Command: DekuContainerWrite {
+    pub trait Command {
         fn msg_byte(&self) -> u8;
         fn serialize(&self, mut buf: &mut [u8]) -> Result<u16, SerializationError> {
-            let output = self.to_bytes()?;
-            buf.write_all(output.as_slice())?;
-            Ok(output.len() as u16)
+            todo!()
+            // let output = self.to_bytes()?;
+            // buf.write_all(output.as_slice())?;
+            // Ok(output.len() as u16)
         }
     }
     pub trait Reply {
@@ -53,16 +49,11 @@ pub(crate) mod markers {
     }
 }
 
-impl From<DekuError> for SerializationError {
-    fn from(_value: DekuError) -> Self {
-        SerializationError
-    }
-}
-impl From<std::io::Error> for SerializationError {
-    fn from(_value: std::io::Error) -> Self {
-        SerializationError
-    }
-}
+// impl From<std::io::Error> for SerializationError {
+//     fn from(_value: std::io::Error) -> Self {
+//         SerializationError
+//     }
+// }
 
 // TODO: macro for cooercing to a internal error type
 
@@ -88,15 +79,15 @@ impl Message {
 }
 
 // TODO: completely overhaul this
-pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
-    let data_slice = &p.data[5..(p.data.len() - p.header.validation_len() as usize)];
-    match p.header.msg_type {
-        0x45 => Ok(Message::REPLY_PDID(
-            DeviceIdentification::try_from(data_slice).unwrap(),
-        )),
-        0x53 => Ok(Message::REPLY_KEYPAD(
-            KeypadData::try_from(data_slice).unwrap(),
-        )),
-        _ => Err("Unknown or unimplemented msg type")?,
-    }
-}
+// pub fn from_packet(p: Packet) -> Result<Message, Box<dyn Error>> {
+//     let data_slice = &p.data[5..(p.data.len() - p.header.validation_len() as usize)];
+//     match p.header.msg_type {
+//         0x45 => Ok(Message::REPLY_PDID(
+//             DeviceIdentification::try_from(data_slice).unwrap(),
+//         )),
+//         0x53 => Ok(Message::REPLY_KEYPAD(
+//             KeypadData::try_from(data_slice).unwrap(),
+//         )),
+//         _ => Err("Unknown or unimplemented msg type")?,
+//     }
+// }
