@@ -45,7 +45,6 @@ impl Reply for DeviceIdentification {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn print_device_ident() {

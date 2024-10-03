@@ -27,7 +27,6 @@ impl KeypadData {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn print_keypad_data() {

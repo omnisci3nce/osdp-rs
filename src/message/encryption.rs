@@ -1,4 +1,4 @@
-use super::markers::{Command, Reply};
+use super::markers::Command;
 
 /// osdp_KEYSET - Transfer encryption key to peripheral device
 #[derive(Debug)]

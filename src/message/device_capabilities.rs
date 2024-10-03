@@ -20,9 +20,9 @@ impl Command for DeviceCapabilitiesRequest {
     }
 }
 
-#[derive(Debug)] // TODO: DekuRead
+#[derive(Debug)]
 pub struct DeviceCapabilitiesReport {
-    capabilities: heapless::Vec<Capability, 32>,
+    capabilities: heapless::Vec<Capability, 32>, // TODO: research max number of capabilities
 }
 
 impl Reply for DeviceCapabilitiesRequest {

@@ -1,5 +1,3 @@
-use crate::packet::Packet;
-
 pub mod card_data;
 pub mod device_capabilities;
 pub mod device_identification;
@@ -37,7 +35,7 @@ pub(crate) mod markers {
 
     pub trait Command {
         fn msg_byte(&self) -> u8;
-        fn serialize(&self, mut buf: &mut [u8]) -> Result<u16, SerializationError> {
+        fn serialize(&self, buf: &mut [u8]) -> Result<u16, SerializationError> {
             todo!()
             // let output = self.to_bytes()?;
             // buf.write_all(output.as_slice())?;

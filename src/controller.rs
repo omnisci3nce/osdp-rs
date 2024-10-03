@@ -9,8 +9,8 @@ use heapless::LinearMap;
 use crate::{
     device::BusDevice,
     errors::OSDPError,
-    message::{markers::Reply, Message},
-    packet::{Packet, RequestID, Sqn, ValidationType},
+    message::Message,
+    packet::{RequestID, Sqn, ValidationType},
 };
 
 #[allow(unused)]
