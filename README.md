@@ -1,5 +1,7 @@
 # osdp-rs
 
+**UPDATE: This project was dormant for a long time but I will be revitalising it over the next 6 months**
+
 *Work-in-progress* implementation of the OSDP specification in Rust.
 
 More information on OSDP can be found on the official SIA site: [open-supervised-device-protocol](https://www.securityindustry.org/industry-standards/open-supervised-device-protocol/)
