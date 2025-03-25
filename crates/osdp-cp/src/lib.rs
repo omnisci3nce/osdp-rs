@@ -55,6 +55,7 @@ impl Controller {
             self._transport.send(&dummy_bytes).unwrap();
         }
     }
+
     #[cfg(feature = "tokio")]
     pub async fn async_run(&mut self) {
         // TODO: implement an async loop that runs and passes responses back to an event handler
