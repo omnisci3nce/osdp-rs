@@ -1,8 +1,7 @@
 use super::markers::Command;
-use deku::prelude::*;
 
 /// osdp_LED - Control reader LEDs
-#[derive(Debug, DekuRead, DekuWrite)]
+#[derive(Debug)]
 pub struct ReaderLEDControl {
     reader_num: u8,
     led_num: u8,
@@ -28,8 +27,7 @@ impl Command for ReaderLEDControl {
     }
 }
 
-#[derive(Debug, Default, DekuRead, DekuWrite)]
-#[deku(type = "u8")]
+#[derive(Debug, Default)]
 pub enum TemporaryControlCode {
     #[default]
     NoOp = 0x00,
@@ -37,16 +35,14 @@ pub enum TemporaryControlCode {
     SetTemp = 0x02,
 }
 
-#[derive(Debug, Default, DekuRead, DekuWrite)]
-#[deku(type = "u8")]
+#[derive(Debug, Default)]
 pub enum PermanentControlCode {
     #[default]
     NoOp = 0x00,
     SetPerm = 0x01,
 }
 
-#[derive(Debug, Default, DekuRead, DekuWrite)]
-#[deku(type = "u8")]
+#[derive(Debug, Default)]
 pub enum LEDColor {
     #[default]
     Unlit = 0,

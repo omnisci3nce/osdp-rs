@@ -1,10 +1,8 @@
-use std::fmt::{self, Display};
-
-use deku::prelude::*;
+// use std::fmt::{self, Display};
 
 use super::markers::{Command, Reply};
 
-#[derive(Debug, DekuRead, DekuWrite)]
+#[derive(Debug)]
 struct Capability {
     function_code: u8,
     compliance: u8,
@@ -12,7 +10,7 @@ struct Capability {
 }
 
 /// osdp_CAP - PD Capabilities Request
-#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+#[derive(Debug, PartialEq)]
 pub struct DeviceCapabilitiesRequest {} // TODO: this should serialise to 0x00
 
 impl Command for DeviceCapabilitiesRequest {
@@ -22,9 +20,9 @@ impl Command for DeviceCapabilitiesRequest {
     }
 }
 
-#[derive(Debug, DekuWrite)] // TODO: DekuRead
+#[derive(Debug)]
 pub struct DeviceCapabilitiesReport {
-    capabilities: Vec<Capability>,
+    capabilities: heapless::Vec<Capability, 32>, // TODO: research max number of capabilities
 }
 
 impl Reply for DeviceCapabilitiesRequest {
@@ -51,6 +49,7 @@ const fn capability_code_to_str(code: u8) -> Option<&'static str> {
     }
 }
 
+#[cfg(feature = "std")]
 impl Display for DeviceCapabilitiesReport {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for ele in &self.capabilities {

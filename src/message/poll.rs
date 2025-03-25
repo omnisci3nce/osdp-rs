@@ -1,9 +1,7 @@
-use deku::prelude::*;
-
 use super::markers::Command;
 
 /// osdp_POLL - Poll
-#[derive(Debug, Clone, Copy, PartialEq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Poll {}
 
 impl Command for Poll {
@@ -14,9 +12,9 @@ impl Command for Poll {
 }
 
 /// osdp_ACK - General acknowledge
-#[derive(Debug, DekuRead, DekuWrite)]
+#[derive(Debug)]
 pub struct Ack {}
 
 /// osdp_NAK - Negative acknowledge
-#[derive(Debug, DekuRead, DekuWrite)]
+#[derive(Debug)]
 pub struct Nack {}

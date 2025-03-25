@@ -1,6 +1,8 @@
-use deku::prelude::*;
-use std::{default, vec};
-use strum_macros::EnumDiscriminants;
+extern crate alloc;
+
+use alloc::{vec, vec::Vec};
+
+use strum::EnumDiscriminants;
 
 use crate::{
     integrity::{calc_checksum, calc_crc},
@@ -15,7 +17,7 @@ pub const MAX_DATA_LEN: usize = MAX_PACKET_SIZE - 5 - 2;
 pub(crate) type RequestID = u32;
 
 /// An OSDP packet
-#[derive(Debug, Clone, DekuWrite, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Packet {
     pub header: PacketHeader,
     // pub data: [u8; MAX_DATA_LEN],
@@ -23,7 +25,7 @@ pub struct Packet {
     pub integrity: PacketValidation,
 }
 
-#[derive(Debug, Default, Clone, DekuRead, DekuWrite)]
+#[derive(Debug, Default, Clone)]
 pub struct PacketHeader {
     pub address: u8,
     pub length: u16,
@@ -31,23 +33,20 @@ pub struct PacketHeader {
     pub msg_type: u8,
 }
 
-#[derive(Debug, Clone, DekuWrite, EnumDiscriminants)]
+#[derive(Debug, Clone, EnumDiscriminants)] //, DekuWrite,)]
 #[strum_discriminants(name(ValidationType))]
-#[deku(type = "u8")]
 pub enum PacketValidation {
-    #[deku(id = "1")]
     Checksum(u8),
-    #[deku(id = "2")]
     CRC(u16),
 }
 
-#[derive(Debug, DekuRead, DekuWrite)]
+#[derive(Debug, PartialEq)]
 pub struct MsgControlByte {
-    #[deku(bits = "2")]
+    // #[deku(bits = "2")]
     sqn: u8,
-    #[deku(bits = "1")]
+    // #[deku(bits = "1")]
     validation_type: u8,
-    #[deku(bits = "1")]
+    // #[deku(bits = "1")]
     scb_presence: u8,
     // remaining 4 bits are deprecated as part of the spec and thus unused
 }
