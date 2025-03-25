@@ -11,19 +11,26 @@ members = [
     "crates/osdp-msg",
     "crates/osdp-pd",
     "crates/osdp-sans",
+    "crates/osdp-neon",
 ]
+
+[features]
+default = []
+nodejs = ["dep:osdp-neon"]
 
 [dependencies]
 osdp-cp.workspace = true
 osdp-msg.workspace = true
 osdp-pd.workspace = true
 osdp-sans.workspace = true
+osdp-neon = { workspace = true, optional = true }
 
 [workspace.dependencies]
 osdp-cp = { path = "crates/osdp-cp" }
 osdp-msg = { path = "crates/osdp-msg" }
 osdp-pd = { path = "crates/osdp-pd" }
 osdp-sans = { path = "crates/osdp-sans" }
+osdp-neon = { path = "crates/osdp-neon" }
 
 heapless = "0.8.0"
 
