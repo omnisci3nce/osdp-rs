@@ -27,8 +27,5 @@ osdp-sans = { path = "crates/osdp-sans" }
 
 heapless = "0.8.0"
 
-# heapless = "0.8.0"
-# strum = { version = "0.26.3", features = ["derive"] }
-
-# [dev-dependencies]
-# serialport = "4.2.0"
+[dev-dependencies]
+serialport = "4.7.0"
