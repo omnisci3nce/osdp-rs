@@ -19,11 +19,19 @@ pub trait BusTransport {
 }
 
 #[derive(Default)]
-pub struct Bus {}
+pub struct Bus {
+    outbound_pkt: Option<Packet>,
+}
 
 impl Bus {
+    /// Pushes data into the bus. The OSDP bus then handles parsing packets and
+    /// updating state.
     pub fn feed(&self, _data: &[u8]) {}
-    pub fn take_packet(&self) -> Option<Packet> {
-        todo!()
+
+    /// Returns Some if there is a packet waiting to be sent back over the bus.
+    /// Note that this model assumes that by default there is only a single packet that will be
+    /// queued for every [`Bus::feed`] invocation.
+    pub fn take_packet(&mut self) -> Option<Packet> {
+        self.outbound_pkt.take()
     }
 }
