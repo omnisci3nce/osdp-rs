@@ -1,28 +1,28 @@
-use std::{error::Error, time::Duration};
+use std::error::Error;
 
-use osdp_rs::{message::device_identification::DeviceIDRequest, parser::Parser};
+// use osdp_rs::{message::device_identification::DeviceIDRequest, parser::Parser};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    return Ok(());
+    Ok(())
     // pretty_env_logger::init();
 
-    let mut parser = Parser::new();
+    // let mut parser = Parser::new();
 
-    // parse some random bytes
-    parser.parse_byte(0x53);
-    parser.parse_byte(0xAA);
-    parser.parse_byte(0x05);
-    parser.parse_byte(0xFF);
-    parser.parse_byte(0x06);
-    parser.parse_byte(0x07);
+    // // parse some random bytes
+    // parser.parse_byte(0x53);
+    // parser.parse_byte(0xAA);
+    // parser.parse_byte(0x05);
+    // parser.parse_byte(0xFF);
+    // parser.parse_byte(0x06);
+    // parser.parse_byte(0x07);
 
-    println!("osdp-rs");
+    // println!("osdp-rs");
 
-    let msg = osdp_rs::message::Message::CMD_ID(DeviceIDRequest {});
+    // let msg = osdp_rs::message::Message::CMD_ID(DeviceIDRequest {});
 
-    let builder = serialport::new("/dev/ttyUSB0", 9600).timeout(Duration::from_millis(20));
-    println!("{:?}", &builder);
-    let mut port = builder.open().expect("Failed to open port");
+    // let builder = serialport::new("/dev/ttyUSB0", 9600).timeout(Duration::from_millis(20));
+    // println!("{:?}", &builder);
+    // let mut port = builder.open().expect("Failed to open port");
     // let mut acu = Controller::new(&mut port, ControllerOptions::default());
     // acu.enqueue_cmd(0x01, msg);
 

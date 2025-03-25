@@ -1,0 +1,9 @@
+[package]
+name = "osdp-sans"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+osdp-msg.workspace = true
+
+heapless.workspace = true

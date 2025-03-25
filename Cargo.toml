@@ -2,16 +2,33 @@
 name = "osdp-rs"
 version = "0.1.0"
 edition = "2021"
+authors = ["Joshua Rowe <omniscient.oce@gmail.com>"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[features]
-default = []
-std = []
+[workspace]
+resolver = "2"
+members = [
+    "crates/osdp-cp",
+    "crates/osdp-msg",
+    "crates/osdp-pd",
+    "crates/osdp-sans",
+]
 
 [dependencies]
-heapless = "0.8.0"
-strum = { version = "0.26.3", features = ["derive"] }
+osdp-cp.workspace = true
+osdp-msg.workspace = true
+osdp-pd.workspace = true
+osdp-sans.workspace = true
 
-[dev-dependencies]
-serialport = "4.2.0"
+[workspace.dependencies]
+osdp-cp = { path = "crates/osdp-cp" }
+osdp-msg = { path = "crates/osdp-msg" }
+osdp-pd = { path = "crates/osdp-pd" }
+osdp-sans = { path = "crates/osdp-sans" }
+
+heapless = "0.8.0"
+
+# heapless = "0.8.0"
+# strum = { version = "0.26.3", features = ["derive"] }
+
+# [dev-dependencies]
+# serialport = "4.2.0"
